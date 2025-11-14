@@ -1,73 +1,220 @@
-# React + TypeScript + Vite
+# ✅ Sistema de Lista de Tarefas com Autenticação (React + TypeScript + Supabase)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Uma aplicação web para **autenticação de usuários e gerenciamento de tarefas**, permitindo adicionar, editar, remover e consultar tarefas — com **upload opcional de imagens**, integrado ao **Supabase** (Auth, Database e Storage).
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📋 Funcionalidades
 
-## React Compiler
+✅ Autenticação segura com **Supabase Auth**
+✅ CRUD completo de tarefas com **Postgres**
+✅ Upload opcional de imagens para o **Storage**
+✅ Sessão persistente e gerenciamento automático de login
+✅ Listagem filtrada por usuário logado
+✅ Interface moderna feita em **React + TypeScript**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 📝 Gerenciamento de Tarefas
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+📌 Adicionar tarefa com:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+* Título
+* Descrição
+* Upload opcional de imagem
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+📌 Editar tarefa já existente
+📌 Excluir tarefa
+📌 Consultar tarefas do usuário autenticado (apenas quando solicitado)
+📌 Atualização automática da lista após ações
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## 🌐 Integração com Supabase
+
+🔐 **RLS (Row Level Security) habilitado**
+🎯 Tarefas vinculadas ao e-mail do usuário autenticado
+🔑 Endpoints seguros via API Key + JWT
+🗃️ Tabela `tasks` configurada com os campos:
+
+* `id`
+* `title`
+* `description`
+* `email`
+* `image_url`
+* `created_at`
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+| Tecnologia                       | Função                           |
+| -------------------------------- | -------------------------------- |
+| **React + Vite**                 | Interface e estrutura do projeto |
+| **TypeScript**                   | Tipagem estática                 |
+| **Supabase Auth**                | Login e cadastro de usuários     |
+| **Supabase Database (Postgres)** | Armazenamento das tarefas        |
+| **Supabase Storage**             | Upload de imagens                |
+| **CSS**                          | Estilização das telas            |
+
+---
+
+## ⚙️ Como Usar
+
+### 1️⃣ Instalar dependências
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2️⃣ Criar arquivo `.env`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+VITE_SUPABASE_URL=https://xxxxx.supabase.co
+VITE_SUPABASE_ANON_KEY=chave_publica_aqui
+```
+
+### 3️⃣ Rodar o projeto
+
+```bash
+npm run dev
+```
+
+Acesse:
+
+```
+http://localhost:5173
+```
+
+---
+
+## 📁 Estrutura de Pastas
+
+```
+src/
+ ├── App.tsx
+ ├── main.tsx
+ ├── supabaseClient.ts
+ ├── components/
+ │     ├── Auth.tsx
+ │     └── TaskManager.tsx
+ ├── styles/
+ │     └── auth.css
+```
+
+---
+
+# 🧩 Lógica do Sistema
+
+## ➕ Adicionar tarefa
+
+1. Usuário preenche título e descrição.
+2. Se houver imagem → upload para o Storage.
+3. Inserção no banco com `insert()`.
+4. Campos resetados após envio.
+
+---
+
+## 📝 Editar tarefa
+
+* Formulário preenchido automaticamente.
+* Atualização via `update()`.
+* Atualiza imagem se houver nova.
+
+---
+
+## 🔍 Consultar tarefas
+
+* Carrega apenas quando o usuário clica no botão.
+
+```ts
+supabase.from("tasks")
+  .select("*")
+  .eq("email", session.user.email)
+  .order("created_at", { ascending: false });
+```
+
+---
+
+## 🗑️ Excluir tarefa
+
+```ts
+supabase
+  .from("tasks")
+  .delete()
+  .eq("id", taskId);
+```
+
+---
+
+# 🗄️ Estrutura do Banco (Supabase)
+
+### **Tabela `tasks`**
+
+| Coluna        | Tipo        | Detalhes               |
+| ------------- | ----------- | ---------------------- |
+| `id`          | uuid (PK)   | gerado automaticamente |
+| `title`       | text        | obrigatório            |
+| `description` | text        | opcional               |
+| `email`       | text        | identifica o usuário   |
+| `image_url`   | text        | pode ser nula          |
+| `created_at`  | timestamptz | default now()          |
+
+### **Storage**
+
+* Bucket: `tasks-images`
+* Upload privado, leitura pública
+
+---
+
+# 🔒 Regras de Segurança (RLS)
+
+```sql
+ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+```
+
+### Inserção
+
+```sql
+CREATE POLICY "Insert own tasks" ON tasks
+FOR INSERT WITH CHECK (auth.email() = email);
+```
+
+### Leitura
+
+```sql
+CREATE POLICY "Read own tasks" ON tasks
+FOR SELECT USING (auth.email() = email);
+```
+
+### Update/Delete
+
+```sql
+CREATE POLICY "Update/Delete own tasks" ON tasks
+FOR ALL USING (auth.email() = email);
+```
+
+---
+
+# 🖥️ Interface
+
+## 🔐 Tela de Login
+
+✔ Layout centralizado
+✔ Responsiva
+✔ Alterna automaticamente conforme autenticação
+
+## 📄 Tela de Tarefas
+
+✔ Formulário de inserção
+✔ Botão "Consultar tarefas"
+✔ Listagem do usuário logado
+✔ Botões de **Editar** e **Excluir**
+✔ Visualização da imagem, se existir
+
+---
+
+# 👨‍💻 Autor
+
+**Guilherme Guimarães**
+Projeto desenvolvido para fins educacionais e demonstração de integração moderna entre *React*, *TypeScript* e *Supabase*.
